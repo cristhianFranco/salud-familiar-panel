@@ -348,7 +348,7 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function loadMembers() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('family_members')
         .select('id, full_name, relationship, phone, is_active')
         .order('full_name', { ascending: true });
@@ -374,7 +374,7 @@
     }
 
     async function loadMedications() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('medications')
         .select('id, member_id, name, dose, unit, instructions, pharmacy_name, is_active, is_chronic, family_members(full_name)')
         .order('created_at', { ascending: false })
@@ -404,7 +404,7 @@
     }
 
     async function loadSchedules() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('medication_schedules')
         .select('id, medication_id, reminder_time, is_active, notes, medications(name, family_members(full_name))')
         .order('created_at', { ascending: false })
@@ -426,7 +426,7 @@
     }
 
     async function loadAlerts() {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('alerts')
         .select('id, title, member_name, scheduled_for, status, channel')
         .order('created_at', { ascending: false })
