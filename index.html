@@ -376,7 +376,7 @@
     async function loadMedications() {
       const { data, error } = await supabase
         .from('medications')
-        .select('id, member_id, name, dose, unit, instructions, pharmacy, is_active, is_chronic, family_members(full_name)')
+        .select('id, member_id, name, dose, unit, instructions, pharmacy_name, is_active, is_chronic, family_members(full_name)')
         .order('created_at', { ascending: false })
         .limit(30);
       if (error) throw error;
@@ -467,7 +467,7 @@
       document.getElementById('dose').value = med.dose || '';
       document.getElementById('unit').value = med.unit || '';
       document.getElementById('instructions').value = med.instructions || '';
-      document.getElementById('pharmacy').value = med.pharmacy || '';
+      document.getElementById('pharmacy').value = med.pharmacy_name || '';
       document.getElementById('is_active').value = String(!!med.is_active);
       document.getElementById('is_chronic').checked = !!med.is_chronic;
       document.getElementById('medSubmitBtn').textContent = 'Actualizar medicamento';
@@ -525,7 +525,7 @@
         dose: document.getElementById('dose').value.trim() || null,
         unit: document.getElementById('unit').value.trim() || null,
         instructions: document.getElementById('instructions').value.trim() || null,
-        pharmacy: document.getElementById('pharmacy').value.trim() || null,
+        pharmacy_name: document.getElementById('pharmacy').value.trim() || null,
         is_active: document.getElementById('is_active').value === 'true',
         is_chronic: document.getElementById('is_chronic').checked,
       };
