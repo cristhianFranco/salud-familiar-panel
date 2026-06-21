@@ -315,39 +315,31 @@
           </div>
 
           <div class="row">
-            <label>Canal preferido
-              <select id="reminder_type">
-                <option value="whatsapp">WhatsApp</option>
-                <option value="telegram">Telegram</option>
-                <option value="android_tasker">Android / Tasker</option>
-              </select>
-            </label>
             <label>Activo
               <select id="schedule_is_active">
                 <option value="true">Sí</option>
                 <option value="false">No</option>
               </select>
             </label>
-          </div>
-
-          <div class="row">
             <label>Recordatorio con voz
               <select id="use_voice_alert">
                 <option value="false">No</option>
                 <option value="true">Sí</option>
               </select>
             </label>
+          </div>
+
+          <div class="row">
             <label>Alarma sonora
               <select id="use_alarm_sound">
                 <option value="true">Sí</option>
                 <option value="false">No</option>
               </select>
             </label>
+            <label>Notas
+              <input id="schedule_notes" type="text" placeholder="Opcional" />
+            </label>
           </div>
-
-          <label>Notas
-            <input id="schedule_notes" type="text" placeholder="Opcional" />
-          </label>
 
           <div class="actions">
             <button type="submit" id="scheduleSubmitBtn">Guardar horario</button>
@@ -485,7 +477,6 @@
       scheduleForm.reset();
       document.getElementById('schedule_id').value = '';
       document.getElementById('schedule_is_active').value = 'true';
-      document.getElementById('reminder_type').value = 'whatsapp';
       document.getElementById('use_voice_alert').value = 'false';
       document.getElementById('use_alarm_sound').value = 'true';
       setSelectedDays([]);
@@ -564,7 +555,7 @@
         <div class="item">
           <h3>${escapeHtml(row.medications?.name || 'Sin medicamento')}</h3>
           <div class="meta">${escapeHtml(row.medications?.family_members?.full_name || 'Sin familiar')} · ${escapeHtml((row.reminder_time || 'Sin hora').slice(0,5))}</div>
-          <div class="meta">${formatDays(row.days_of_week)} · ${formatChannel(row.reminder_type)}</div>
+          <div class="meta">${formatDays(row.days_of_week)}</div>
           <div class="meta">${row.use_voice_alert ? '🔊 Voz' : ''}${row.use_voice_alert && row.use_alarm_sound ? ' · ' : ''}${row.use_alarm_sound ? '⏰ Alarma' : ''}${(!row.use_voice_alert && !row.use_alarm_sound) ? 'Sin voz ni alarma' : ''}</div>
           ${row.notes ? `<div class="meta">${escapeHtml(row.notes)}</div>` : ''}
           <div class="pill ${row.is_active ? '' : 'warn'}">${row.is_active ? 'Horario activo' : 'Horario inactivo'}</div>
@@ -631,7 +622,6 @@
       document.getElementById('schedule_medication_id').value = row.medication_id || '';
       document.getElementById('reminder_time').value = (row.reminder_time || '').slice(0,5);
       document.getElementById('schedule_is_active').value = String(!!row.is_active);
-      document.getElementById('reminder_type').value = row.reminder_type || 'whatsapp';
       document.getElementById('use_voice_alert').value = String(!!row.use_voice_alert);
       document.getElementById('use_alarm_sound').value = String(!!row.use_alarm_sound);
       setSelectedDays(row.days_of_week);
@@ -722,7 +712,7 @@
         medication_id: document.getElementById('schedule_medication_id').value,
         reminder_time: rawTime ? `${rawTime}:00` : null,
         days_of_week: selectedDays.length ? selectedDays : null,
-        reminder_type: document.getElementById('reminder_type').value,
+        reminder_type: 'daily',
         use_voice_alert: document.getElementById('use_voice_alert').value === 'true',
         use_alarm_sound: document.getElementById('use_alarm_sound').value === 'true',
         is_active: document.getElementById('schedule_is_active').value === 'true',
