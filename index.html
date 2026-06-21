@@ -3,283 +3,395 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Salud Familiar Panel v3</title>
-  <meta name="description" content="Panel CRUD conectado a Supabase para familiares, medicamentos, horarios y alertas." />
+  <title>Salud Familiar</title>
+  <meta name="description" content="Panel para administrar medicamentos, horarios y recordatorios de la familia, conectado a Supabase." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root {
-      --bg: #f4f7fb;
-      --surface: #ffffff;
-      --surface-2: #f0f4f8;
-      --text: #18212f;
-      --muted: #667085;
-      --border: #d9e2ec;
-      --primary: #0f766e;
-      --primary-dark: #115e59;
-      --danger: #b42318;
-      --danger-dark: #912018;
-      --warning: #b54708;
-      --success: #067647;
-      --radius: 18px;
-      --shadow: 0 12px 28px rgba(16, 24, 40, 0.08);
+    :root{
+      --ink:#16261f;
+      --ink-soft:#5d6e64;
+      --line:#dde6df;
+      --bg:#eef1ec;
+      --surface:#ffffff;
+      --sunk:#f3f7f3;
+      --primary:#0c6b58;
+      --primary-strong:#084d3f;
+      --primary-tint:#e1f0ea;
+      --header-1:#0a5c4b;
+      --header-2:#0d7a63;
+      --danger:#b3261e;
+      --danger-strong:#8c1d17;
+      --danger-tint:#fbe9e7;
+      --warn:#94560a;
+      --warn-tint:#fbecc9;
+      --ok-tint:#dcefe3;
+      --ok-line:#b6e3c8;
+      --radius:18px;
+      --radius-sm:11px;
+      --shadow:0 1px 2px rgba(14,34,24,.05), 0 10px 30px rgba(14,34,24,.07);
+      --shadow-sm:0 1px 3px rgba(14,34,24,.08);
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Inter, system-ui, sans-serif;
-      line-height: 1.5;
+    *{ box-sizing:border-box; }
+    html{ -webkit-text-size-adjust:100%; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:Inter, system-ui, -apple-system, sans-serif;
+      line-height:1.55;
+      -webkit-font-smoothing:antialiased;
     }
-    .wrap { max-width: 1280px; margin: 0 auto; padding: 24px; }
-    .hero, .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
+    h1,h2,h3{ font-family:"Bricolage Grotesque", Inter, sans-serif; margin:0; letter-spacing:-.01em; }
+
+    /* ---------- Topbar ---------- */
+    .topbar{
+      background:linear-gradient(120deg, var(--header-1), var(--header-2));
+      color:#fff;
+      position:sticky; top:0; z-index:30;
+      box-shadow:0 6px 24px rgba(8,60,48,.18);
     }
-    .hero { padding: 24px; margin-bottom: 20px; }
-    h1, h2, h3 { margin: 0 0 10px; }
-    p { margin: 0; color: var(--muted); }
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 18px;
+    .topbar-inner{
+      max-width:1720px; margin:0 auto;
+      padding:16px clamp(16px,2.4vw,34px);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:18px 28px; flex-wrap:wrap;
     }
-    .stat {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
+    .brand{ display:flex; align-items:center; gap:14px; min-width:0; }
+    .brand-mark{
+      width:42px; height:42px; flex:none;
+      border-radius:12px;
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.28);
+      display:grid; place-items:center;
+      font-family:"Bricolage Grotesque"; font-weight:700; font-size:1.5rem; line-height:1;
     }
-    .stat strong { display: block; font-size: 1.5rem; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .stack { display: grid; gap: 20px; }
-    .card { padding: 20px; }
-    .toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 12px;
+    .brand h1{ font-size:clamp(1.25rem,2.2vw,1.6rem); font-weight:700; }
+    .brand-sub{ margin:2px 0 0; font-size:.82rem; color:rgba(255,255,255,.78); }
+    .topbar-stats{ display:flex; align-items:stretch; gap:10px; flex-wrap:wrap; }
+    .stat{
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.20);
+      border-radius:12px;
+      padding:8px 16px; min-width:84px;
+      display:flex; flex-direction:column; justify-content:center;
     }
-    form { display: grid; gap: 14px; margin-top: 12px; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    label { display: grid; gap: 6px; font-weight: 600; font-size: 0.95rem; }
-    input, select, textarea, button { font: inherit; }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #fff;
-      color: var(--text);
+    .stat strong{ font-family:"Bricolage Grotesque"; font-weight:700; font-size:1.5rem; line-height:1.05; }
+    .stat span{ font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; color:rgba(255,255,255,.82); }
+    .reload{
+      background:#fff; color:var(--primary-strong);
+      border:0; border-radius:12px; padding:10px 18px;
+      font:600 .92rem Inter, sans-serif; cursor:pointer; align-self:center;
+      transition:transform .12s ease, box-shadow .12s ease, background .15s ease;
     }
-    textarea { min-height: 88px; resize: vertical; }
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 11px 15px;
-      background: var(--primary);
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
+    .reload:hover{ background:#f1faf6; box-shadow:0 4px 14px rgba(0,0,0,.15); }
+    .reload:active{ transform:translateY(1px); }
+
+    /* ---------- Layout ---------- */
+    .layout{
+      max-width:1720px; margin:0 auto;
+      padding:clamp(18px,2.4vw,34px);
+      display:grid; gap:clamp(16px,1.8vw,24px);
+      grid-template-columns:minmax(0,440px) minmax(0,1fr);
+      align-items:start;
     }
-    button:hover { background: var(--primary-dark); }
-    .secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
-    .danger { background: var(--danger); }
-    .danger:hover { background: var(--danger-dark); }
-    .status {
-      margin-top: 10px;
-      border-radius: 12px;
-      padding: 12px 14px;
-      display: none;
-      font-size: 0.95rem;
+    .col{ display:grid; gap:clamp(16px,1.8vw,24px); align-content:start; }
+    @media (min-width:1480px){
+      .col-lists{ grid-template-columns:1fr 1fr; }
     }
-    .status.show { display: block; }
-    .status.ok { background: #ecfdf3; border: 1px solid #abefc6; color: var(--success); }
-    .status.error { background: #fef3f2; border: 1px solid #fecdca; color: var(--danger); }
-    .list { display: grid; gap: 12px; margin-top: 14px; }
-    .item {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
+    @media (max-width:980px){
+      .layout{ grid-template-columns:1fr; }
     }
-    .meta { color: var(--muted); font-size: 0.92rem; }
-    .pill {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      background: #def7ec;
-      color: #067647;
+
+    /* ---------- Cards ---------- */
+    .card{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:clamp(18px,2vw,26px);
     }
-    .pill.warn { background: #fff4e5; color: var(--warning); }
-    .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
+    .card-head h2{ font-size:1.18rem; font-weight:700; }
+    .card-head p{ margin:3px 0 0; color:var(--ink-soft); font-size:.88rem; }
+
+    /* ---------- Forms ---------- */
+    form{ display:grid; gap:14px; margin-top:18px; }
+    .row{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    label{ display:grid; gap:6px; font-weight:600; font-size:.82rem; color:var(--ink); }
+    input,select,textarea{
+      width:100%; padding:11px 13px;
+      border:1px solid var(--line); border-radius:var(--radius-sm);
+      background:#fff; color:var(--ink); font:inherit;
+      transition:border-color .15s ease, box-shadow .15s ease;
     }
-    .actions button { padding: 8px 12px; font-size: 0.9rem; }
-    .config {
-      margin-bottom: 18px;
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      color: #9a3412;
-      padding: 14px;
-      border-radius: 14px;
+    input::placeholder,textarea::placeholder{ color:#9aa8a0; }
+    input:focus,select:focus,textarea:focus{
+      outline:none; border-color:var(--primary);
+      box-shadow:0 0 0 3px var(--primary-tint);
     }
-    code {
-      background: rgba(15, 118, 110, 0.08);
-      padding: 2px 6px;
-      border-radius: 8px;
+    textarea{ min-height:84px; resize:vertical; }
+    .check{ flex-direction:row; display:flex; align-items:center; gap:10px; font-size:.9rem; }
+    .check input{ width:auto; }
+    .field-block{ display:grid; gap:8px; }
+    .field-label{ font-weight:600; font-size:.82rem; color:var(--ink); }
+    .hint{ font-size:.78rem; color:var(--ink-soft); }
+    .days{ display:flex; gap:8px; flex-wrap:wrap; }
+    .day{
+      width:42px; height:42px; padding:0; flex:none;
+      border-radius:50%; border:1px solid var(--line);
+      background:#fff; color:var(--ink-soft);
+      font:700 .9rem Inter, sans-serif;
+      display:grid; place-items:center;
+      transition:background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease;
     }
-    @media (max-width: 980px) {
-      .grid, .row, .stats { grid-template-columns: 1fr; }
-      .wrap { padding: 16px; }
+    .day:hover{ border-color:var(--primary); color:var(--primary); background:#fff; }
+    .day.on{ background:var(--primary); border-color:var(--primary); color:#fff; }
+    .day.on:hover{ background:var(--primary-strong); color:#fff; }
+
+    /* ---------- Buttons ---------- */
+    button{
+      font:600 .92rem Inter, sans-serif; border:0; cursor:pointer;
+      border-radius:var(--radius-sm); padding:11px 17px;
+      background:var(--primary); color:#fff;
+      transition:background .15s ease, transform .1s ease;
+    }
+    button:hover{ background:var(--primary-strong); }
+    button:active{ transform:translateY(1px); }
+    button:focus-visible{ outline:2px solid var(--primary); outline-offset:2px; }
+    button:disabled{ opacity:.6; cursor:default; }
+    .secondary{ background:#fff; color:var(--ink); border:1px solid var(--line); }
+    .secondary:hover{ background:var(--sunk); }
+    .danger{ background:var(--danger); }
+    .danger:hover{ background:var(--danger-strong); }
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+
+    /* ---------- Status ---------- */
+    .status{ margin-top:14px; border-radius:var(--radius-sm); padding:11px 14px; font-size:.9rem; display:none; }
+    .status.show{ display:block; }
+    .status.ok{ background:var(--ok-tint); color:var(--primary-strong); border:1px solid var(--ok-line); }
+    .status.error{ background:var(--danger-tint); color:var(--danger-strong); border:1px solid #f3c2bd; }
+
+    /* ---------- Lists & items (generados por JS) ---------- */
+    .list{ display:grid; gap:12px; margin-top:18px; }
+    .item{
+      background:var(--surface);
+      border:1px solid var(--line); border-radius:var(--radius-sm);
+      padding:14px 16px;
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    .item:hover{ border-color:#c6d6cc; box-shadow:var(--shadow-sm); }
+    .item h3{ font-size:1.03rem; font-weight:600; margin-bottom:5px; }
+    .meta{ color:var(--ink-soft); font-size:.88rem; }
+    .pill{
+      display:inline-block; margin-top:11px;
+      padding:4px 11px; border-radius:999px;
+      font-size:.74rem; font-weight:700; letter-spacing:.02em;
+      background:var(--ok-tint); color:var(--primary-strong);
+    }
+    .pill.warn{ background:var(--warn-tint); color:var(--warn); }
+    .item .actions{ margin-top:13px; }
+    .item .actions button{ padding:7px 13px; font-size:.85rem; }
+
+    /* ---------- Motion ---------- */
+    @media (prefers-reduced-motion:no-preference){
+      .card{ animation:rise .5s cubic-bezier(.2,.7,.2,1) both; }
+      .col-forms .card:nth-child(2){ animation-delay:.05s; }
+      .col-lists .card:nth-child(2){ animation-delay:.05s; }
+      .col-lists .card:nth-child(3){ animation-delay:.1s; }
+      .col-lists .card:nth-child(4){ animation-delay:.15s; }
+    }
+    @keyframes rise{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+
+    /* ---------- Small screens ---------- */
+    @media (max-width:600px){
+      .topbar-inner{ flex-direction:column; align-items:stretch; gap:14px; }
+      .topbar-stats{ display:grid; grid-template-columns:1fr 1fr; }
+      .stat{ min-width:0; }
+      .reload{ width:100%; }
+      .row{ grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <h1>Salud Familiar Panel v3</h1>
-      <p>Versión CRUD para administrar medicamentos y horarios desde el navegador, conectada a Supabase y alineada con tu flujo de recordatorios en n8n. [page:1]</p>
-      <div class="stats">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">+</div>
+        <div>
+          <h1>Salud Familiar</h1>
+          <p class="brand-sub">Medicamentos, horarios y recordatorios de la familia</p>
+        </div>
+      </div>
+      <div class="topbar-stats">
         <div class="stat"><strong id="membersCount">0</strong><span>Familiares</span></div>
         <div class="stat"><strong id="medsCount">0</strong><span>Medicamentos</span></div>
         <div class="stat"><strong id="schedulesCount">0</strong><span>Horarios</span></div>
         <div class="stat"><strong id="alertsCount">0</strong><span>Alertas</span></div>
+        <button type="button" class="reload" id="reloadBtn">Recargar</button>
       </div>
-    </section>
-
-    <div class="config">
-      Reemplaza <code>SUPABASE_URL</code> y <code>SUPABASE_ANON_KEY</code> por las credenciales públicas de tu proyecto. Esta versión hace crear, editar y eliminar en <code>medications</code> y <code>medication_schedules</code>, y lectura en <code>alerts</code>. [page:1]
     </div>
+  </header>
 
-    <main class="grid">
-      <section class="stack">
-        <article class="card">
-          <div class="toolbar">
-            <div>
-              <h2>Medicamentos</h2>
-              <p>Crear y editar registros en <code>medications</code>.</p>
-            </div>
-            <button type="button" class="secondary" id="reloadBtn">Recargar todo</button>
+  <main class="layout">
+    <div class="col col-forms">
+      <article class="card">
+        <div class="card-head">
+          <h2>Nuevo medicamento</h2>
+          <p>Crea un registro o edita uno existente.</p>
+        </div>
+        <form id="medForm">
+          <input type="hidden" id="med_id" />
+          <div class="row">
+            <label>Familiar
+              <select id="member_id" required><option value="">Cargando familiares...</option></select>
+            </label>
+            <label>Medicamento
+              <input id="name" type="text" placeholder="Ej. Metformina" required />
+            </label>
+          </div>
+          <div class="row">
+            <label>Dosis
+              <input id="dose" type="text" placeholder="850" />
+            </label>
+            <label>Unidad
+              <input id="unit" type="text" placeholder="mg" />
+            </label>
+          </div>
+          <label>Instrucciones
+            <textarea id="instructions" placeholder="Ej. Tomar con la cena"></textarea>
+          </label>
+          <div class="row">
+            <label>Farmacia
+              <input id="pharmacy" type="text" placeholder="Opcional" />
+            </label>
+            <label>Activo
+              <select id="is_active">
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+          </div>
+          <label class="check">
+            <input id="is_chronic" type="checkbox" /> Es crónico
+          </label>
+          <div class="actions">
+            <button type="submit" id="medSubmitBtn">Guardar medicamento</button>
+            <button type="button" class="secondary" id="medCancelBtn">Cancelar edición</button>
+          </div>
+        </form>
+        <div id="medStatus" class="status"></div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <h2>Nuevo horario</h2>
+          <p>Define a qué hora recordar cada medicamento.</p>
+        </div>
+        <form id="scheduleForm">
+          <input type="hidden" id="schedule_id" />
+          <div class="row">
+            <label>Medicamento
+              <select id="schedule_medication_id" required><option value="">Cargando medicamentos...</option></select>
+            </label>
+            <label>Hora del recordatorio
+              <input id="reminder_time" type="time" required />
+            </label>
           </div>
 
-          <form id="medForm">
-            <input type="hidden" id="med_id" />
-            <div class="row">
-              <label>Familiar
-                <select id="member_id" required><option value="">Cargando familiares...</option></select>
-              </label>
-              <label>Medicamento
-                <input id="name" type="text" placeholder="Ej. Metformina" required />
-              </label>
+          <div class="field-block">
+            <span class="field-label">Días</span>
+            <div class="days" id="daysPicker">
+              <button type="button" class="day" data-day="1">L</button>
+              <button type="button" class="day" data-day="2">M</button>
+              <button type="button" class="day" data-day="3">M</button>
+              <button type="button" class="day" data-day="4">J</button>
+              <button type="button" class="day" data-day="5">V</button>
+              <button type="button" class="day" data-day="6">S</button>
+              <button type="button" class="day" data-day="7">D</button>
             </div>
-            <div class="row">
-              <label>Dosis
-                <input id="dose" type="text" placeholder="850" />
-              </label>
-              <label>Unidad
-                <input id="unit" type="text" placeholder="mg" />
-              </label>
-            </div>
-            <label>Instrucciones
-              <textarea id="instructions" placeholder="Ej. Tomar con comida"></textarea>
-            </label>
-            <div class="row">
-              <label>Farmacia
-                <input id="pharmacy" type="text" placeholder="Opcional" />
-              </label>
-              <label>Activo
-                <select id="is_active">
-                  <option value="true">Sí</option>
-                  <option value="false">No</option>
-                </select>
-              </label>
-            </div>
-            <label style="display:flex;align-items:center;gap:10px;font-weight:600;">
-              <input id="is_chronic" type="checkbox" style="width:auto;" /> Es crónico
-            </label>
-            <div class="actions">
-              <button type="submit" id="medSubmitBtn">Guardar medicamento</button>
-              <button type="button" class="secondary" id="medCancelBtn">Cancelar edición</button>
-            </div>
-          </form>
-          <div id="medStatus" class="status"></div>
-        </article>
+            <span class="hint">Toca los días en que se debe enviar el recordatorio.</span>
+          </div>
 
-        <article class="card">
-          <h2>Horarios</h2>
-          <p>Crear y editar registros en <code>medication_schedules</code>, que es la tabla que consume tu workflow de n8n. [page:1]</p>
-          <form id="scheduleForm">
-            <input type="hidden" id="schedule_id" />
-            <div class="row">
-              <label>Medicamento
-                <select id="schedule_medication_id" required><option value="">Cargando medicamentos...</option></select>
-              </label>
-              <label>Hora del recordatorio
-                <input id="reminder_time" type="time" required />
-              </label>
-            </div>
-            <div class="row">
-              <label>Activo
-                <select id="schedule_is_active">
-                  <option value="true">Sí</option>
-                  <option value="false">No</option>
-                </select>
-              </label>
-              <label>Notas
-                <input id="schedule_notes" type="text" placeholder="Opcional" />
-              </label>
-            </div>
-            <div class="actions">
-              <button type="submit" id="scheduleSubmitBtn">Guardar horario</button>
-              <button type="button" class="secondary" id="scheduleCancelBtn">Cancelar edición</button>
-            </div>
-          </form>
-          <div id="scheduleStatus" class="status"></div>
-        </article>
-      </section>
+          <div class="row">
+            <label>Canal preferido
+              <select id="reminder_type">
+                <option value="whatsapp">WhatsApp</option>
+                <option value="telegram">Telegram</option>
+                <option value="android_tasker">Android / Tasker</option>
+              </select>
+            </label>
+            <label>Activo
+              <select id="schedule_is_active">
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+          </div>
 
-      <section class="stack">
-        <article class="card">
+          <div class="row">
+            <label>Recordatorio con voz
+              <select id="use_voice_alert">
+                <option value="false">No</option>
+                <option value="true">Sí</option>
+              </select>
+            </label>
+            <label>Alarma sonora
+              <select id="use_alarm_sound">
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+              </select>
+            </label>
+          </div>
+
+          <label>Notas
+            <input id="schedule_notes" type="text" placeholder="Opcional" />
+          </label>
+
+          <div class="actions">
+            <button type="submit" id="scheduleSubmitBtn">Guardar horario</button>
+            <button type="button" class="secondary" id="scheduleCancelBtn">Cancelar edición</button>
+          </div>
+        </form>
+        <div id="scheduleStatus" class="status"></div>
+      </article>
+    </div>
+
+    <div class="col col-lists">
+      <article class="card">
+        <div class="card-head">
           <h2>Familiares</h2>
-          <p>Lectura desde <code>family_members</code>.</p>
-          <div id="membersList" class="list"></div>
-        </article>
+          <p>Personas registradas en el hogar.</p>
+        </div>
+        <div id="membersList" class="list"></div>
+      </article>
 
-        <article class="card">
-          <h2>Medicamentos cargados</h2>
-          <p>Desde aquí puedes editar o eliminar registros. [page:1]</p>
-          <div id="medicationsList" class="list"></div>
-        </article>
+      <article class="card">
+        <div class="card-head">
+          <h2>Medicamentos</h2>
+          <p>Edita o elimina cualquier registro.</p>
+        </div>
+        <div id="medicationsList" class="list"></div>
+      </article>
 
-        <article class="card">
-          <h2>Horarios cargados</h2>
-          <p>También puedes editar o eliminar horarios sin tocar n8n. [page:1]</p>
-          <div id="schedulesList" class="list"></div>
-        </article>
+      <article class="card">
+        <div class="card-head">
+          <h2>Horarios</h2>
+          <p>Recordatorios programados por medicamento.</p>
+        </div>
+        <div id="schedulesList" class="list"></div>
+      </article>
 
-        <article class="card">
+      <article class="card">
+        <div class="card-head">
           <h2>Alertas recientes</h2>
-          <p>Vista de auditoría sobre <code>alerts</code>, donde tu flujo registra los envíos. [page:1]</p>
-          <div id="alertsList" class="list"></div>
-        </article>
-      </section>
-    </main>
-  </div>
+          <p>Últimos envíos registrados.</p>
+        </div>
+        <div id="alertsList" class="list"></div>
+      </article>
+    </div>
+  </main>
 
   <script>
     const SUPABASE_URL = 'https://vnjvwsecovuxgtoignps.supabase.co';
@@ -298,11 +410,43 @@
 
     const memberSelect = document.getElementById('member_id');
     const scheduleMedicationSelect = document.getElementById('schedule_medication_id');
+    const daysPicker = document.getElementById('daysPicker');
 
     const membersList = document.getElementById('membersList');
     const medicationsList = document.getElementById('medicationsList');
     const schedulesList = document.getElementById('schedulesList');
     const alertsList = document.getElementById('alertsList');
+
+    const DAY_LABELS = { 1:'L', 2:'M', 3:'M', 4:'J', 5:'V', 6:'S', 7:'D' };
+    const CHANNEL_LABELS = { whatsapp:'WhatsApp', telegram:'Telegram', android_tasker:'Android / Tasker' };
+
+    function formatDays(arr) {
+      if (!Array.isArray(arr) || !arr.length) return 'Sin días';
+      if (arr.length === 7) return 'Todos los días';
+      return arr.slice().sort((a,b)=>a-b).map(d => DAY_LABELS[d] || d).join(' ');
+    }
+
+    function formatChannel(value) {
+      return CHANNEL_LABELS[value] || (value ? escapeHtml(value) : 'Sin canal');
+    }
+
+    function getSelectedDays() {
+      return [...daysPicker.querySelectorAll('.day.on')]
+        .map(b => parseInt(b.dataset.day, 10))
+        .sort((a,b) => a-b);
+    }
+
+    function setSelectedDays(arr) {
+      const set = new Set((arr || []).map(Number));
+      daysPicker.querySelectorAll('.day').forEach(b => {
+        b.classList.toggle('on', set.has(parseInt(b.dataset.day, 10)));
+      });
+    }
+
+    daysPicker.addEventListener('click', (e) => {
+      const btn = e.target.closest('.day');
+      if (btn) btn.classList.toggle('on');
+    });
 
     function setStatus(el, msg, type = 'ok') {
       el.textContent = msg;
@@ -341,6 +485,10 @@
       scheduleForm.reset();
       document.getElementById('schedule_id').value = '';
       document.getElementById('schedule_is_active').value = 'true';
+      document.getElementById('reminder_type').value = 'whatsapp';
+      document.getElementById('use_voice_alert').value = 'false';
+      document.getElementById('use_alarm_sound').value = 'true';
+      setSelectedDays([]);
       document.getElementById('scheduleSubmitBtn').textContent = 'Guardar horario';
       clearStatus(scheduleStatus);
     }
@@ -406,7 +554,7 @@
     async function loadSchedules() {
       const { data, error } = await supabaseClient
         .from('medication_schedules')
-        .select('id, medication_id, reminder_time, is_active, notes, medications(name, family_members(full_name))')
+        .select('id, medication_id, reminder_time, is_active, notes, days_of_week, reminder_type, use_voice_alert, use_alarm_sound, medications(name, family_members(full_name))')
         .order('created_at', { ascending: false })
         .limit(30);
       if (error) throw error;
@@ -415,14 +563,16 @@
       schedulesList.innerHTML = data.length ? data.map(row => `
         <div class="item">
           <h3>${escapeHtml(row.medications?.name || 'Sin medicamento')}</h3>
-          <div class="meta">${escapeHtml(row.medications?.family_members?.full_name || 'Sin familiar')} · ${escapeHtml(row.reminder_time || 'Sin hora')}</div>
-          <div class="meta">${escapeHtml(row.notes || 'Sin notas')}</div>
+          <div class="meta">${escapeHtml(row.medications?.family_members?.full_name || 'Sin familiar')} · ${escapeHtml((row.reminder_time || 'Sin hora').slice(0,5))}</div>
+          <div class="meta">${formatDays(row.days_of_week)} · ${formatChannel(row.reminder_type)}</div>
+          <div class="meta">${row.use_voice_alert ? '🔊 Voz' : ''}${row.use_voice_alert && row.use_alarm_sound ? ' · ' : ''}${row.use_alarm_sound ? '⏰ Alarma' : ''}${(!row.use_voice_alert && !row.use_alarm_sound) ? 'Sin voz ni alarma' : ''}</div>
+          ${row.notes ? `<div class="meta">${escapeHtml(row.notes)}</div>` : ''}
           <div class="pill ${row.is_active ? '' : 'warn'}">${row.is_active ? 'Horario activo' : 'Horario inactivo'}</div>
           <div class="actions">
             <button type="button" class="secondary" onclick='editSchedule(${JSON.stringify(JSON.stringify(row))})'>Editar</button>
             <button type="button" class="danger" onclick='deleteSchedule("${row.id}")'>Eliminar</button>
           </div>
-        </div>`).join('') : '<div class="item"><h3>Sin horarios</h3><div class="meta">Todavía no hay registros en medication_schedules.</div></div>';
+        </div>`).join('') : '<div class="item"><h3>Sin horarios</h3><div class="meta">Crea tu primer horario en el formulario de la izquierda.</div></div>';
     }
 
     async function loadAlerts() {
@@ -481,6 +631,10 @@
       document.getElementById('schedule_medication_id').value = row.medication_id || '';
       document.getElementById('reminder_time').value = (row.reminder_time || '').slice(0,5);
       document.getElementById('schedule_is_active').value = String(!!row.is_active);
+      document.getElementById('reminder_type').value = row.reminder_type || 'whatsapp';
+      document.getElementById('use_voice_alert').value = String(!!row.use_voice_alert);
+      document.getElementById('use_alarm_sound').value = String(!!row.use_alarm_sound);
+      setSelectedDays(row.days_of_week);
       document.getElementById('schedule_notes').value = row.notes || '';
       document.getElementById('scheduleSubmitBtn').textContent = 'Actualizar horario';
       setStatus(scheduleStatus, 'Modo edición activado para horario.', 'ok');
@@ -563,9 +717,14 @@
 
       const id = document.getElementById('schedule_id').value;
       const rawTime = document.getElementById('reminder_time').value;
+      const selectedDays = getSelectedDays();
       const payload = {
         medication_id: document.getElementById('schedule_medication_id').value,
         reminder_time: rawTime ? `${rawTime}:00` : null,
+        days_of_week: selectedDays.length ? selectedDays : null,
+        reminder_type: document.getElementById('reminder_type').value,
+        use_voice_alert: document.getElementById('use_voice_alert').value === 'true',
+        use_alarm_sound: document.getElementById('use_alarm_sound').value === 'true',
         is_active: document.getElementById('schedule_is_active').value === 'true',
         notes: document.getElementById('schedule_notes').value.trim() || null,
       };
