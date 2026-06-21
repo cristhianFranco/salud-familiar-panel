@@ -345,7 +345,7 @@
       clearStatus(scheduleStatus);
     }
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function loadMembers() {
       const { data, error } = await supabase
@@ -491,7 +491,7 @@
       if (!confirm('¿Seguro que quieres eliminar este medicamento?')) return;
       clearStatus(medStatus);
       try {
-        const { error } = await supabase.from('medications').delete().eq('id', id);
+        const { error } = await supabaseClient.from('medications').delete().eq('id', id);
         if (error) throw error;
         setStatus(medStatus, 'Medicamento eliminado correctamente.', 'ok');
         await refreshAll();
@@ -504,7 +504,7 @@
       if (!confirm('¿Seguro que quieres eliminar este horario?')) return;
       clearStatus(scheduleStatus);
       try {
-        const { error } = await supabase.from('medication_schedules').delete().eq('id', id);
+        const { error } = await supabaseClient.from('medication_schedules').delete().eq('id', id);
         if (error) throw error;
         setStatus(scheduleStatus, 'Horario eliminado correctamente.', 'ok');
         await refreshAll();
@@ -541,8 +541,8 @@
 
       try {
         const query = id
-          ? supabase.from('medications').update(payload).eq('id', id)
-          : supabase.from('medications').insert([payload]);
+          ? supabaseClient.from('medications').update(payload).eq('id', id)
+          : supabaseClient.from('medications').insert([payload]);
         const { error } = await query;
         if (error) throw error;
         resetMedicationForm();
@@ -581,8 +581,8 @@
 
       try {
         const query = id
-          ? supabase.from('medication_schedules').update(payload).eq('id', id)
-          : supabase.from('medication_schedules').insert([payload]);
+          ? supabaseClient.from('medication_schedules').update(payload).eq('id', id)
+          : supabaseClient.from('medication_schedules').insert([payload]);
         const { error } = await query;
         if (error) throw error;
         resetScheduleForm();
